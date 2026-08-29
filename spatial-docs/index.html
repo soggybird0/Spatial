@@ -19,7 +19,6 @@
       display: flex;
       align-items: center;
       isolation: isolate;
-      /* override styles.css solid fill so the canvas grid reads clearly */
       background: radial-gradient(ellipse 60% 70% at 80% 40%, rgba(91, 76, 219, 0.18), transparent 60%) !important;
     }
     .hero-bg {
@@ -29,14 +28,7 @@
       height: 100%;
       pointer-events: none;
       z-index: 0;
-      opacity: 1;
     }
-    .hero-inner {
-      position: relative;
-      z-index: 2;
-      max-width: 560px;
-    }
-    /* Left-only fade so the right side stays vivid */
     .hero-fade {
       position: absolute;
       inset: 0;
@@ -51,6 +43,11 @@
         transparent 75%
       );
     }
+    .hero-inner {
+      position: relative;
+      z-index: 2;
+      max-width: 560px;
+    }
   </style>
 </head>
 <body>
@@ -63,7 +60,6 @@
     <nav class="nav">
       <a href="index.html" class="on">Overview</a>
       <a href="api.html">API</a>
-      <a href="examples.html">Examples</a>
     </nav>
     <div class="top-actions">
       <a class="btn" href="https://github.com/soggybird0/Spatial" target="_blank" rel="noopener">GitHub</a>
@@ -85,7 +81,6 @@
       <a href="#debug">Debug</a>
       <div class="side-label">Pages</div>
       <a href="api.html">API reference</a>
-      <a href="examples.html">Examples</a>
     </aside>
 
     <div class="content">
@@ -121,7 +116,7 @@
             <p>Server rolls target poses back to the claim timestamp before intersection checks.</p>
           </div>
           <div class="card">
-            <div class="ico">↯</div>
+            <div class="ico">⚡↯</div>
             <h3>Predict on client</h3>
             <p>Instant VFX from local queries. Damage only after the server confirms.</p>
           </div>
@@ -131,7 +126,7 @@
             <p>Rate limits, stale/future timestamps, no-intersect — explicit reject reasons.</p>
           </div>
           <div class="card">
-            <div class="ico"↔</div>
+            <div class="ico">↔</div>
             <h3>Shapes that move</h3>
             <p>Box, sphere, or part. Weld to weapons. Origin + offset follow every frame.</p>
           </div>
@@ -212,16 +207,38 @@ hitbox:<span class="fn">Start</span>()</code></pre>
         <div class="tbl">
           <table>
             <thead>
-              <tr><th>Mode</th><th>Client queries</th><th>Server queries</th><th>Best for</th></tr>
+              <tr>
+                <th>Mode</th>
+                <th>Client queries</th>
+                <th>Server queries</th>
+                <th>Best for</th>
+              </tr>
             </thead>
             <tbody>
-              <tr><td><code>"Server"</code></td><td>No</td><td>Yes</td><td>Projectiles, AOE</td></tr>
-              <tr><td><code>"Client"</code></td><td>Yes</td><td>No*</td><td>Snappy melee</td></tr>
-              <tr><td><code>"Hybrid"</code></td><td>Yes</td><td>Yes</td><td>Default — both worlds</td></tr>
+              <tr>
+                <td><code>"Server"</code></td>
+                <td>No</td>
+                <td>Yes</td>
+                <td>Projectiles, AOE</td>
+              </tr>
+              <tr>
+                <td><code>"Client"</code></td>
+                <td>Yes</td>
+                <td>No*</td>
+                <td>Snappy melee</td>
+              </tr>
+              <tr>
+                <td><code>"Hybrid"</code></td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>Default — both worlds</td>
+              </tr>
             </tbody>
           </table>
         </div>
-        <p class="muted" style="font-size:13px;">* Client-authority nodes still exist on the server so claims have somewhere to land.</p>
+        <p class="muted" style="font-size:13px;">
+          * Client-authority nodes still exist on the server so claims have somewhere to land.
+        </p>
 
         <h2 id="how">How it works</h2>
         <ol>
@@ -240,14 +257,44 @@ hitbox:<span class="fn">Start</span>()</code></pre>
 })</code></pre>
         <div class="tbl">
           <table>
-            <thead><tr><th>Key</th><th>Default</th><th>Notes</th></tr></thead>
+            <thead>
+              <tr>
+                <th>Key</th>
+                <th>Default</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
             <tbody>
-              <tr><td><code>MaxRewind</code></td><td><code>0.5</code></td><td>Max seconds of rewind</td></tr>
-              <tr><td><code>HistorySeconds</code></td><td><code>1</code></td><td>Pose buffer length</td></tr>
-              <tr><td><code>HistoryHz</code></td><td><code>20</code></td><td>Snapshot rate</td></tr>
-              <tr><td><code>QueriesPerFrame</code></td><td><code>48</code></td><td>Hard query budget</td></tr>
-              <tr><td><code>ClaimRate</code></td><td><code>18</code></td><td>Claims / sec / player</td></tr>
-              <tr><td><code>DefaultAuthority</code></td><td><code>"Hybrid"</code></td><td>Server / Client / Hybrid</td></tr>
+              <tr>
+                <td><code>MaxRewind</code></td>
+                <td><code>0.5</code></td>
+                <td>Max seconds of rewind</td>
+              </tr>
+              <tr>
+                <td><code>HistorySeconds</code></td>
+                <td><code>1</code></td>
+                <td>Pose buffer length</td>
+              </tr>
+              <tr>
+                <td><code>HistoryHz</code></td>
+                <td><code>20</code></td>
+                <td>Snapshot rate</td>
+              </tr>
+              <tr>
+                <td><code>QueriesPerFrame</code></td>
+                <td><code>48</code></td>
+                <td>Hard query budget</td>
+              </tr>
+              <tr>
+                <td><code>ClaimRate</code></td>
+                <td><code>18</code></td>
+                <td>Claims / sec / player</td>
+              </tr>
+              <tr>
+                <td><code>DefaultAuthority</code></td>
+                <td><code>"Hybrid"</code></td>
+                <td>Server / Client / Hybrid</td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -262,7 +309,9 @@ hitbox:<span class="fn">Start</span>()</code></pre>
 
 Server:<span class="fn">Track</span>(npcModel)
 Server:<span class="fn">Untrack</span>(npcModel)</code></pre>
-        <p class="muted">No track → no rewind for that model. Owners are tracked automatically when you pass <code>Owner</code>.</p>
+        <p class="muted">
+          No track → no rewind for that model. Owners are tracked automatically when you pass <code>Owner</code>.
+        </p>
 
         <h2 id="debug">Debug</h2>
 <pre><code>Server.DebugHook:<span class="fn">SetEnabled</span>(<span class="kw">true</span>)
@@ -278,112 +327,118 @@ Client.DebugHook:<span class="fn">SetEnabled</span>(<span class="kw">true</span>
 
   <script src="js/main.js"></script>
   <script>
-/* Hero wave grid — inlined so it always loads */
-(function () {
-  const canvas = document.getElementById("hero-wave");
-  if (!canvas) return;
-  const ctx = canvas.getContext("2d");
-  let w = 0, h = 0, dpr = 1;
+  (function () {
+    const canvas = document.getElementById("hero-wave");
+    if (!canvas) return;
 
-  function resize() {
-    const r = canvas.parentElement.getBoundingClientRect();
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
-    w = Math.max(1, r.width);
-    h = Math.max(1, r.height);
-    canvas.width = Math.floor(w * dpr);
-    canvas.height = Math.floor(h * dpr);
-    canvas.style.width = w + "px";
-    canvas.style.height = h + "px";
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  }
-  window.addEventListener("resize", resize);
-  resize();
+    const ctx = canvas.getContext("2d");
+    let w = 0, h = 0, dpr = 1;
 
-  function project(x, z, t) {
-    const wave =
-      Math.sin(x * 0.7 + t * 1.05) * 0.28 +
-      Math.sin(z * 0.85 - t * 1.2) * 0.22 +
-      Math.sin((x + z) * 0.4 + t * 0.6) * 0.1;
-    const camY = 1.5, camZ = -2.0, fov = 2.6;
-    const rx = x, ry = wave - camY, rz = z - camZ;
-    const s = fov / Math.max(0.25, rz);
-    const cx = w * 0.72;
-    const cy = h * 0.55;
-    const scale = Math.min(w, h) * 0.48;
-    return {
-      x: cx + rx * s * scale,
-      y: cy + ry * s * scale * 0.9,
-      a: Math.max(0, Math.min(1, 1.3 - rz * 0.2)),
-    };
-  }
-
-  function frame(now) {
-    const t = now * 0.001;
-    ctx.clearRect(0, 0, w, h);
-
-    // ambient glow on the right
-    const g = ctx.createRadialGradient(w * 0.78, h * 0.42, 0, w * 0.7, h * 0.5, Math.max(w, h) * 0.65);
-    g.addColorStop(0, "rgba(124, 106, 240, 0.28)");
-    g.addColorStop(0.4, "rgba(91, 76, 219, 0.1)");
-    g.addColorStop(1, "transparent");
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 0, w, h);
-
-    const cols = 20, rows = 16;
-    const x0 = -2.6, x1 = 3.8, z0 = 1.0, z1 = 6.5;
-    const pts = [];
-    for (let j = 0; j <= rows; j++) {
-      const row = [];
-      const z = z0 + (z1 - z0) * (j / rows);
-      for (let i = 0; i <= cols; i++) {
-        const x = x0 + (x1 - x0) * (i / cols);
-        row.push(project(x, z, t));
-      }
-      pts.push(row);
+    function resize() {
+      const r = canvas.parentElement.getBoundingClientRect();
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      w = Math.max(1, r.width);
+      h = Math.max(1, r.height);
+      canvas.width = Math.floor(w * dpr);
+      canvas.height = Math.floor(h * dpr);
+      canvas.style.width = w + "px";
+      canvas.style.height = h + "px";
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
-    // horiz lines — brighter near camera
-    for (let j = 0; j <= rows; j++) {
-      ctx.beginPath();
-      for (let i = 0; i <= cols; i++) {
-        const p = pts[j][i];
-        if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
-      }
-      const near = 1 - j / rows;
-      const a = 0.12 + near * 0.45;
-      ctx.strokeStyle = "rgba(196, 181, 253," + a + ")";
-      ctx.lineWidth = 1 + near * 0.6;
-      ctx.stroke();
+    window.addEventListener("resize", resize);
+    resize();
+
+    function project(x, z, t) {
+      const wave =
+        Math.sin(x * 0.7 + t * 1.05) * 0.28 +
+        Math.sin(z * 0.85 - t * 1.2) * 0.22 +
+        Math.sin((x + z) * 0.4 + t * 0.6) * 0.1;
+      const camY = 1.5;
+      const camZ = -2.0;
+      const fov = 2.6;
+      const ry = wave - camY;
+      const rz = z - camZ;
+      const s = fov / Math.max(0.25, rz);
+      const scale = Math.min(w, h) * 0.48;
+      return {
+        x: w * 0.72 + x * s * scale,
+        y: h * 0.55 + ry * s * scale * 0.9,
+        a: Math.max(0, Math.min(1, 1.3 - rz * 0.2)),
+      };
     }
 
-    // vert lines
-    for (let i = 0; i <= cols; i++) {
-      ctx.beginPath();
+    function frame(now) {
+      const t = now * 0.001;
+      ctx.clearRect(0, 0, w, h);
+
+      const g = ctx.createRadialGradient(
+        w * 0.78, h * 0.42, 0,
+        w * 0.7, h * 0.5, Math.max(w, h) * 0.65
+      );
+      g.addColorStop(0, "rgba(124, 106, 240, 0.28)");
+      g.addColorStop(0.4, "rgba(91, 76, 219, 0.1)");
+      g.addColorStop(1, "transparent");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, w, h);
+
+      const cols = 20;
+      const rows = 16;
+      const x0 = -2.6, x1 = 3.8;
+      const z0 = 1.0, z1 = 6.5;
+      const pts = [];
+
       for (let j = 0; j <= rows; j++) {
-        const p = pts[j][i];
-        if (j === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
+        const row = [];
+        const z = z0 + (z1 - z0) * (j / rows);
+        for (let i = 0; i <= cols; i++) {
+          const x = x0 + (x1 - x0) * (i / cols);
+          row.push(project(x, z, t));
+        }
+        pts.push(row);
       }
-      ctx.strokeStyle = "rgba(139, 124, 240, 0.22)";
-      ctx.lineWidth = 1;
-      ctx.stroke();
-    }
 
-    // nodes
-    for (let j = 0; j <= rows; j += 2) {
-      for (let i = 0; i <= cols; i += 2) {
-        const p = pts[j][i];
-        if (p.a < 0.2) continue;
+      for (let j = 0; j <= rows; j++) {
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 1.6 + p.a, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(221, 214, 254," + (0.2 + p.a * 0.45) + ")";
-        ctx.fill();
+        for (let i = 0; i <= cols; i++) {
+          const p = pts[j][i];
+          if (i === 0) ctx.moveTo(p.x, p.y);
+          else ctx.lineTo(p.x, p.y);
+        }
+        const near = 1 - j / rows;
+        ctx.strokeStyle = "rgba(196, 181, 253," + (0.12 + near * 0.45) + ")";
+        ctx.lineWidth = 1 + near * 0.6;
+        ctx.stroke();
       }
+
+      for (let i = 0; i <= cols; i++) {
+        ctx.beginPath();
+        for (let j = 0; j <= rows; j++) {
+          const p = pts[j][i];
+          if (j === 0) ctx.moveTo(p.x, p.y);
+          else ctx.lineTo(p.x, p.y);
+        }
+        ctx.strokeStyle = "rgba(139, 124, 240, 0.22)";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
+      for (let j = 0; j <= rows; j += 2) {
+        for (let i = 0; i <= cols; i += 2) {
+          const p = pts[j][i];
+          if (p.a < 0.2) continue;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 1.6 + p.a, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(221, 214, 254," + (0.2 + p.a * 0.45) + ")";
+          ctx.fill();
+        }
+      }
+
+      requestAnimationFrame(frame);
     }
 
     requestAnimationFrame(frame);
-  }
-  requestAnimationFrame(frame);
-})();
+  })();
   </script>
 </body>
 </html>
