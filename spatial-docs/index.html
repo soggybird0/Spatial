@@ -47,44 +47,6 @@
     </aside>
 
     <div class="content">
-      <!-- HERO -->
-      <section class="hero">
-        <div class="hero-grid">
-          <div>
-            <div class="hero-kicker"><span></span> Shared hitbox library · v1.0.2</div>
-            <h1>Spatial — hitboxes that <em>actually check where you were</em>.</h1>
-            <p class="hero-lead">
-              Server + client hitboxes with lag compensation, velocity prediction, and fail-closed validation.
-              Not another <code>.Touched</code> wrapper — a system that rewinds the world before it decides.
-            </p>
-            <div class="hero-row">
-              <span class="chip chip-hi">Lag compensation</span>
-              <span class="chip">Hybrid authority</span>
-              <span class="chip">Luau strict</span>
-              <span class="chip">MIT</span>
-            </div>
-            <div class="hero-cta">
-              <a class="btn btn-main" href="#quickstart">Quick start</a>
-              <a class="btn" href="api.html">API reference</a>
-              <a class="btn" href="examples.html">Examples</a>
-            </div>
-          </div>
-
-          <div class="viz" aria-label="3D hitbox visualizer">
-            <canvas id="spatial-viz"></canvas>
-            <div class="viz-hud">
-              <span class="viz-tag">rewind <b id="viz-rewind">0.25s</b></span>
-              <span class="viz-tag">latency <b id="viz-lag">250ms</b></span>
-              <div class="viz-controls">
-                <button type="button" data-viz-shape="box" class="active">Box</button>
-                <button type="button" data-viz-shape="sphere">Sphere</button>
-                <button type="button" data-viz-auto class="active">Auto orbit</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <div class="page">
         <h2 id="features">Why not just .Touched?</h2>
         <div class="cards">
