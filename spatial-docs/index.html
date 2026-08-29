@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Spatial — Shared Roblox Hitbox Library</title>
+  <meta name="description" content="Spatial is a shared Roblox hitbox library with lag compensation and server-authoritative validation. Hitboxes that actually check where you were." />
+  <link rel="icon" href="assets/icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <button class="menu-btn" aria-label="Menu">☰</button>
+    <a class="brand" href="index.html">
+      <img src="assets/icon.png" alt="" width="32" height="32" />
+      Spatial
+    </a>
+    <nav class="nav">
+      <a href="index.html" class="on">Overview</a>
+      <a href="api.html">API</a>
+      <a href="examples.html">Examples</a>
+    </nav>
+    <div class="top-actions">
+      <a class="btn" href="https://github.com/soggybird0/Spatial" target="_blank" rel="noopener">GitHub</a>
+      <a class="btn btn-main" href="api.html">Get started →</a>
+    </div>
+  </header>
+
+  <div class="shell">
+    <aside class="side">
+      <div class="side-label">Overview</div>
+      <a href="#features">Features</a>
+      <a href="#install">Install</a>
+      <a href="#quickstart">Quick start</a>
+      <a href="#authority">Authority</a>
+      <a href="#how">How it works</a>
+      <div class="side-label">Guides</div>
+      <a href="#config">Configuration</a>
+      <a href="#track">Tracking</a>
+      <a href="#debug">Debug</a>
+      <div class="side-label">Pages</div>
+      <a href="api.html">API reference</a>
+      <a href="examples.html">Examples</a>
+    </aside>
+
+    <div class="content">
+      <!-- HERO -->
+      <section class="hero">
+        <div class="hero-grid">
+          <div>
+            <div class="hero-kicker"><span></span> Shared hitbox library · v1.0.1</div>
+            <h1>Spatial — hitboxes that <em>actually check where you were</em>.</h1>
+            <p class="hero-lead">
+              Server + client hitboxes with lag compensation, velocity prediction, and fail-closed validation.
+              Not another <code>.Touched</code> wrapper — a system that rewinds the world before it decides.
+            </p>
+            <div class="hero-row">
+              <span class="chip chip-hi">Lag compensation</span>
+              <span class="chip">Hybrid authority</span>
+              <span class="chip">Luau strict</span>
+              <span class="chip">MIT</span>
+            </div>
+            <div class="hero-cta">
+              <a class="btn btn-main" href="#quickstart">Quick start</a>
+              <a class="btn" href="api.html">API reference</a>
+              <a class="btn" href="examples.html">Examples</a>
+            </div>
+          </div>
+
+          <div class="viz" aria-label="3D hitbox visualizer">
+            <canvas id="spatial-viz"></canvas>
+            <div class="viz-hud">
+              <span class="viz-tag">rewind <b id="viz-rewind">0.25s</b></span>
+              <span class="viz-tag">latency <b id="viz-lag">250ms</b></span>
+              <div class="viz-controls">
+                <button type="button" data-viz-shape="box" class="active">Box</button>
+                <button type="button" data-viz-shape="sphere">Sphere</button>
+                <button type="button" data-viz-auto class="active">Auto orbit</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="page">
+        <h2 id="features">Why not just .Touched?</h2>
+        <div class="cards">
+          <div class="card">
+            <div class="ico">⏪</div>
+            <h3>Rewind, then test</h3>
+            <p>Server rolls target poses back to the claim timestamp before intersection checks.</p>
+          </div>
+          <div class="card">
+            <div class="ico">⚡</div>
+            <h3>Predict on client</h3>
+            <p>Instant VFX from local queries. Damage only after the server confirms.</p>
+          </div>
+          <div class="card">
+            <div class="ico">🛡️</div>
+            <h3>Fail closed</h3>
+            <p>Rate limits, stale/future timestamps, no-intersect — explicit reject reasons.</p>
+          </div>
+          <div class="card">
+            <div class="ico">📐</div>
+            <h3>Shapes that move</h3>
+            <p>Box, sphere, or part. Weld to weapons. Origin + offset follow every frame.</p>
+          </div>
+          <div class="card">
+            <div class="ico">🎚️</div>
+            <h3>Budgeted</h3>
+            <p>Hard caps on queries per frame and claims per player so combat stays cheap.</p>
+          </div>
+          <div class="card">
+            <div class="ico">🧬</div>
+            <h3>Typed end to end</h3>
+            <p>Strict Luau types for params, results, modes, and authority.</p>
+          </div>
+        </div>
+
+        <h2 id="install">Install</h2>
+        <div class="tabs">
+          <div class="tabbar">
+            <button class="on" type="button">Wally</button>
+            <button type="button">Manual / Rojo</button>
+          </div>
+          <div class="tab on">
+<pre><code>[dependencies]
+Spatial = "soggybird0/spatial@1.0.1"</code></pre>
+          </div>
+          <div class="tab">
+<pre><code><span class="cm">-- Drop under ReplicatedStorage; require on server + client</span>
+<span class="kw">local</span> Spatial = <span class="fn">require</span>(ReplicatedStorage.Spatial)</code></pre>
+          </div>
+        </div>
+
+        <h2 id="quickstart">Quick start</h2>
+        <p class="muted">Require Spatial once on the server so remotes and pose history exist before clients talk.</p>
+
+        <h3>Server — authoritative hit</h3>
+<pre><code><span class="kw">local</span> Server = <span class="fn">require</span>(ReplicatedStorage.Spatial).Server
+
+<span class="kw">local</span> hitbox = Server:<span class="fn">Create</span>({
+    Shape = <span class="str">"Box"</span>,
+    Size = Vector3.new(<span class="num">6</span>, <span class="num">6</span>, <span class="num">8</span>),
+    Origin = character.HumanoidRootPart,
+    Offset = CFrame.new(<span class="num">0</span>, <span class="num">0</span>, <span class="num">-4</span>),
+    Duration = <span class="num">0.25</span>,
+    Authority = <span class="str">"Hybrid"</span>,
+    Owner = player,
+})
+
+hitbox.Hit:<span class="fn">Connect</span>(<span class="kw">function</span>(result)
+    <span class="kw">if</span> result.Humanoid <span class="kw">then</span>
+        result.Humanoid:<span class="fn">TakeDamage</span>(<span class="num">25</span>)
+    <span class="kw">end</span>
+<span class="kw">end</span>)
+
+hitbox:<span class="fn">Start</span>()</code></pre>
+
+        <h3>Client — predictive feedback</h3>
+<pre><code><span class="kw">local</span> Client = <span class="fn">require</span>(ReplicatedStorage.Spatial).Client
+
+<span class="kw">local</span> hitbox = Client:<span class="fn">Create</span>({
+    Shape = <span class="str">"Sphere"</span>,
+    Radius = <span class="num">5</span>,
+    Origin = character.HumanoidRootPart,
+    Duration = <span class="num">0.2</span>,
+})
+
+hitbox.Hit:<span class="fn">Connect</span>(<span class="kw">function</span>(result)
+    playHitEffect(result.Position) <span class="cm">-- VFX only</span>
+<span class="kw">end</span>)
+
+hitbox:<span class="fn">Start</span>()</code></pre>
+
+        <div class="note ok">
+          <strong>Rule of thumb</strong>
+          Damage and gameplay state only from <code>Spatial.Server.Hit</code>. Client hits are for feel.
+        </div>
+
+        <h2 id="authority">Authority modes</h2>
+        <div class="tbl">
+          <table>
+            <thead>
+              <tr><th>Mode</th><th>Client queries</th><th>Server queries</th><th>Best for</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>"Server"</code></td><td>No</td><td>Yes</td><td>Projectiles, AOE</td></tr>
+              <tr><td><code>"Client"</code></td><td>Yes</td><td>No*</td><td>Snappy melee</td></tr>
+              <tr><td><code>"Hybrid"</code></td><td>Yes</td><td>Yes</td><td>Default — both worlds</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="muted" style="font-size:13px;">* Client-authority nodes still exist on the server so claims have somewhere to land.</p>
+
+        <h2 id="how">How it works</h2>
+        <ol>
+          <li>Client (or server) runs spatial queries — never <code>.Touched</code>.</li>
+          <li>Client sends a <strong>claim</strong>: hitbox id, timestamp, victim tokens.</li>
+          <li>Server rate-limits, rewinds tracked poses, re-tests the volume.</li>
+          <li>Emits confirmed <code>Hit</code> or <code>Rejected</code> with a reason. Fail closed.</li>
+        </ol>
+        <div class="note">
+          <strong>The visualizer above</strong>
+          Purple volume = your hitbox. Green figure = live target. Ghost figure = where the server rewinds them. The dashed link is the claim path.
+        </div>
+
+        <h2 id="config">Configuration</h2>
+<pre><code>Server:<span class="fn">Configure</span>({
+    MaxRewind = <span class="num">0.5</span>,
+    QueriesPerFrame = <span class="num">48</span>,
+    ClaimRate = <span class="num">18</span>,
+    Debug = <span class="kw">false</span>,
+})</code></pre>
+        <div class="tbl">
+          <table>
+            <thead><tr><th>Key</th><th>Default</th><th>Notes</th></tr></thead>
+            <tbody>
+              <tr><td><code>MaxRewind</code></td><td><code>0.5</code></td><td>Max seconds of rewind</td></tr>
+              <tr><td><code>HistorySeconds</code></td><td><code>1</code></td><td>Pose buffer length</td></tr>
+              <tr><td><code>HistoryHz</code></td><td><code>20</code></td><td>Snapshot rate</td></tr>
+              <tr><td><code>QueriesPerFrame</code></td><td><code>48</code></td><td>Hard query budget</td></tr>
+              <tr><td><code>ClaimRate</code></td><td><code>18</code></td><td>Claims / sec / player</td></tr>
+              <tr><td><code>DefaultAuthority</code></td><td><code>"Hybrid"</code></td><td>Server / Client / Hybrid</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Full list on the <a href="api.html#configuration">API page</a>.</p>
+
+        <h2 id="track">Tracking targets</h2>
+<pre><code>Players.PlayerAdded:<span class="fn">Connect</span>(<span class="kw">function</span>(player)
+    player.CharacterAdded:<span class="fn">Connect</span>(<span class="kw">function</span>(character)
+        Server:<span class="fn">Track</span>(character)
+    <span class="kw">end</span>)
+<span class="kw">end</span>)
+
+Server:<span class="fn">Track</span>(npcModel)
+Server:<span class="fn">Untrack</span>(npcModel)</code></pre>
+        <p class="muted">No track → no rewind for that model. Owners are tracked automatically when you pass <code>Owner</code>.</p>
+
+        <h2 id="debug">Debug</h2>
+<pre><code>Server.DebugHook:<span class="fn">SetEnabled</span>(<span class="kw">true</span>)
+<span class="fn">print</span>(Server:<span class="fn">Metrics</span>())
+Client.DebugHook:<span class="fn">SetEnabled</span>(<span class="kw">true</span>)</code></pre>
+      </div>
+
+      <footer class="foot">
+        Spatial v1.0.1 · MIT · <a href="https://github.com/soggybird0">@soggybird0</a>
+      </footer>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+  <script src="js/visualizer.js"></script>
+</body>
+</html>

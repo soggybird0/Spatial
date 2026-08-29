@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API — Spatial</title>
+  <link rel="icon" href="assets/icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <button class="menu-btn" aria-label="Menu">☰</button>
+    <a class="brand" href="index.html"><img src="assets/icon.png" alt="" width="32" height="32" /> Spatial</a>
+    <nav class="nav">
+      <a href="index.html">Overview</a>
+      <a href="api.html" class="on">API</a>
+      <a href="examples.html">Examples</a>
+    </nav>
+    <div class="top-actions">
+      <a class="btn" href="https://github.com/soggybird0/Spatial" target="_blank" rel="noopener">GitHub</a>
+      <a class="btn btn-main" href="examples.html">Examples →</a>
+    </div>
+  </header>
+
+  <div class="shell">
+    <aside class="side">
+      <div class="side-label">Module</div>
+      <a href="#require">Require</a>
+      <a href="#configuration">Configuration</a>
+      <div class="side-label">Server</div>
+      <a href="#s-configure">Configure</a>
+      <a href="#s-create">Create</a>
+      <a href="#s-get">Get</a>
+      <a href="#s-track">Track</a>
+      <a href="#s-misc">Ping / Metrics</a>
+      <div class="side-label">Client</div>
+      <a href="#c-create">Create</a>
+      <a href="#c-misc">Get / Now</a>
+      <div class="side-label">Hitbox</div>
+      <a href="#h-props">Properties</a>
+      <a href="#h-signals">Signals</a>
+      <a href="#h-life">Lifecycle</a>
+      <a href="#h-more">Weld / Mutate</a>
+      <div class="side-label">Types</div>
+      <a href="#t-params">HitboxParams</a>
+      <a href="#t-result">HitResult</a>
+      <a href="#t-reject">RejectReason</a>
+    </aside>
+
+    <div class="content">
+      <div class="page" style="padding-top:36px;">
+        <h2 id="require" style="margin-top:0;">API reference</h2>
+        <p class="muted">Everything Spatial exposes on server and client.</p>
+
+<pre><code><span class="kw">local</span> Spatial = <span class="fn">require</span>(ReplicatedStorage.Spatial)
+Spatial.Client   <span class="cm">-- nil on server</span>
+Spatial.Server   <span class="cm">-- nil on client</span>
+Spatial.Types</code></pre>
+        <div class="note warn"><strong>Bootstrap</strong> Require once on the server before any client uses Spatial.</div>
+
+        <h2 id="configuration">Configuration</h2>
+<pre><code>Server:<span class="fn">Configure</span>({ MaxRewind = <span class="num">0.5</span>, Debug = <span class="kw">true</span> })</code></pre>
+        <div class="tbl">
+          <table>
+            <thead><tr><th>Key</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>DefaultShape</code></td><td><code>"Box"</code></td><td>Fallback shape</td></tr>
+              <tr><td><code>DefaultSize</code></td><td><code>(6,6,8)</code></td><td>Box size</td></tr>
+              <tr><td><code>DefaultRadius</code></td><td><code>4</code></td><td>Sphere radius</td></tr>
+              <tr><td><code>DefaultDuration</code></td><td><code>0.2</code></td><td>Active seconds</td></tr>
+              <tr><td><code>DefaultMode</code></td><td><code>"Once"</code></td><td>Once / Pierce / Cooldown</td></tr>
+              <tr><td><code>DefaultAuthority</code></td><td><code>"Hybrid"</code></td><td>Authority mode</td></tr>
+              <tr><td><code>LagCompensate</code></td><td><code>true</code></td><td>Pose rewind</td></tr>
+              <tr><td><code>VelocityPrediction</code></td><td><code>true</code></td><td>Extrapolate movers</td></tr>
+              <tr><td><code>MaxRewind</code></td><td><code>0.5</code></td><td>Max rewind (s)</td></tr>
+              <tr><td><code>RewindPadding</code></td><td><code>0.03</code></td><td>Jitter padding</td></tr>
+              <tr><td><code>HistorySeconds</code></td><td><code>1</code></td><td>History length</td></tr>
+              <tr><td><code>HistoryHz</code></td><td><code>20</code></td><td>Snapshot rate</td></tr>
+              <tr><td><code>QueriesPerFrame</code></td><td><code>48</code></td><td>Query budget</td></tr>
+              <tr><td><code>ClaimRate</code></td><td><code>18</code></td><td>Claims/sec/player</td></tr>
+              <tr><td><code>MaxClaimVictims</code></td><td><code>12</code></td><td>Victims per claim</td></tr>
+              <tr><td><code>MaxHitboxesPerOwner</code></td><td><code>∞</code></td><td>Live hitboxes / owner</td></tr>
+              <tr><td><code>CharacterPad</code></td><td><code>(2,3,1.5)</code></td><td>Rewind test pad</td></tr>
+              <tr><td><code>Debug</code></td><td><code>false</code></td><td>Studio markers</td></tr>
+              <tr><td><code>AliveFolder</code></td><td><code>nil</code></td><td>Restrict targets</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="server">Server</h2>
+        <h3 id="s-configure">Configure</h3>
+        <div class="sig"><div class="sig-name">Server.Configure(patch)</div><p>Patch config keys. Unknown keys are ignored.</p></div>
+        <h3 id="s-create">Create</h3>
+        <div class="sig"><div class="sig-name">Server.Create(params: HitboxParams) → Hitbox</div><p>Spawn a hitbox. See HitboxParams below.</p></div>
+        <h3 id="s-get">Get</h3>
+        <div class="sig"><div class="sig-name">Server.Get(id: string) → Hitbox?</div></div>
+        <h3 id="s-track">Track / Untrack</h3>
+        <div class="sig">
+          <div class="sig-name">Server.Track(model: Model)</div>
+          <div class="sig-name">Server.Untrack(model: Model)</div>
+          <p>Pose history for lag compensation. Track every potential target.</p>
+        </div>
+        <h3 id="s-misc">Ping · Now · Metrics · Health · SetAliveFolder</h3>
+        <div class="sig">
+          <div class="sig-name">Server.Ping(player) → number</div>
+          <div class="sig-name">Server.Now() → number</div>
+          <div class="sig-name">Server.Metrics() → table</div>
+          <div class="sig-name">Server.Health() → table</div>
+          <div class="sig-name">Server.SetAliveFolder(folder)</div>
+          <div class="sig-name">Server.DebugHook.SetEnabled(on)</div>
+        </div>
+
+        <h2 id="client">Client</h2>
+        <h3 id="c-create">Create</h3>
+        <div class="sig">
+          <div class="sig-name">Client.Create(params) → Hitbox</div>
+          <p>Predictive hitbox. Auto-blacklists local character when possible.</p>
+        </div>
+        <div class="note warn"><strong>Prediction only</strong> Never apply damage from client <code>Hit</code>.</div>
+        <h3 id="c-misc">Get / Now / DebugHook</h3>
+        <div class="sig">
+          <div class="sig-name">Client.Get(id) → Hitbox?</div>
+          <div class="sig-name">Client.Now() → number</div>
+          <div class="sig-name">Client.DebugHook.SetEnabled(on)</div>
+        </div>
+
+        <h2 id="hitbox">Hitbox</h2>
+        <h3 id="h-props">Properties</h3>
+        <div class="tbl">
+          <table>
+            <thead><tr><th>Member</th><th>Type</th></tr></thead>
+            <tbody>
+              <tr><td><code>Id</code></td><td>string</td></tr>
+              <tr><td><code>Params</code></td><td>HitboxParams</td></tr>
+              <tr><td><code>Active</code> / <code>Destroyed</code></td><td>boolean</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <h3 id="h-signals">Signals</h3>
+        <div class="tbl">
+          <table>
+            <thead><tr><th>Signal</th><th>Notes</th></tr></thead>
+            <tbody>
+              <tr><td><code>Hit</code></td><td>HitResult payload</td></tr>
+              <tr><td><code>Started</code> / <code>Stopped</code></td><td>Lifecycle</td></tr>
+              <tr><td><code>Rejected</code></td><td>Server only — reason string</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <h3 id="h-life">Lifecycle</h3>
+        <div class="sig">
+          <div class="sig-name">hitbox:Start(duration?)</div>
+          <div class="sig-name">hitbox:Stop()</div>
+          <div class="sig-name">hitbox:Destroy()</div>
+        </div>
+        <h3 id="h-more">Weld · mutate · memory</h3>
+        <div class="sig">
+          <div class="sig-name">hitbox:WeldTo(part, offset?)</div>
+          <div class="sig-name">hitbox:Unweld()</div>
+          <div class="sig-name">hitbox:SetCFrame / SetSize / SetRadius</div>
+          <div class="sig-name">hitbox:ClearHits() · GetHits()</div>
+        </div>
+
+        <h2 id="types">Types</h2>
+        <h3 id="t-params">HitboxParams</h3>
+<pre><code>{
+  Shape, Size, Radius, Part, CFrame, Origin, Offset,
+  Duration, Mode, Debounce,
+  Filter = { Whitelist, Blacklist, AliveFolder, CollisionGroup, LookingFor },
+  Authority, Owner,
+  LagCompensate, VelocityPrediction, MaxRewind,
+  Debug, Id, DotProduct, ReferenceLook,
+}</code></pre>
+        <h3 id="t-result">HitResult</h3>
+<pre><code>{
+  Model, Humanoid?, Player?, Part, Position,
+  Confirmed, Rewound, Latency,
+}</code></pre>
+        <h3 id="t-reject">RejectReason</h3>
+        <p class="muted"><code>Destroyed</code> · <code>Inactive</code> · <code>RateLimited</code> · <code>BadPayload</code> · <code>StaleTime</code> · <code>FutureTime</code> · <code>NoIntersect</code> · <code>Filtered</code> · <code>UnknownHitbox</code> · <code>NoOwner</code> · <code>PingExceeded</code></p>
+      </div>
+      <footer class="foot">Spatial v1.0.1 · MIT · <a href="https://github.com/soggybird0">@soggybird0</a></footer>
+    </div>
+  </div>
+  <script src="js/main.js"></script>
+</body>
+</html>
