@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Examples — Spatial</title>
+  <meta name="description" content="Code examples for the Spatial hitbox library." />
+  <link rel="icon" href="assets/icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <button class="menu-toggle" aria-label="Toggle menu">☰</button>
+    <a href="index.html" class="logo">
+      <img class="logo-icon" src="assets/icon.png" alt="" width="28" height="28" />
+      Spatial
+    </a>
+    <nav class="nav-links">
+      <a href="index.html">Overview</a>
+      <a href="api.html">API Reference</a>
+      <a href="examples.html" class="active">Examples</a>
+    </nav>
+    <div class="header-right">
+      <a class="btn" href="https://github.com/soggybird0/Spatial" target="_blank" rel="noopener">GitHub</a>
+      <a class="btn btn-primary" href="api.html">API →</a>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-title">Examples</div>
+        <a href="#melee">Melee Slash</a>
+        <a href="#aoe">Sphere AOE</a>
+        <a href="#welded">Welded Weapon</a>
+        <a href="#projectile">Projectile</a>
+        <a href="#npcs">Tracking NPCs</a>
+        <a href="#mutate">Runtime Mutation</a>
+        <a href="#reject">Rejections</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-title">Docs</div>
+        <a href="index.html">Overview</a>
+        <a href="api.html">API Reference</a>
+      </div>
+    </aside>
+
+    <main class="main">
+      <h1>Examples</h1>
+      <p class="lead">Copy-paste patterns for common combat setups.</p>
+
+      <h2 id="melee">Melee Slash (Hybrid)</h2>
+      <p>Server applies damage; client plays immediate feedback.</p>
+      <h3>Server</h3>
+<pre><code><span class="kw">local</span> Server = <span class="fn">require</span>(ReplicatedStorage.Spatial).Server
+
+<span class="kw">local function</span> <span class="fn">slash</span>(player: Player)
+    <span class="kw">local</span> character = player.Character
+    <span class="kw">if not</span> character <span class="kw">then return end</span>
+    <span class="kw">local</span> root = character:<span class="fn">FindFirstChild</span>(<span class="str">"HumanoidRootPart"</span>) :: BasePart?
+    <span class="kw">if not</span> root <span class="kw">then return end</span>
+
+    <span class="kw">local</span> hitbox = Server:<span class="fn">Create</span>({
+        Shape = <span class="str">"Box"</span>,
+        Size = Vector3.new(<span class="num">5</span>, <span class="num">5</span>, <span class="num">7</span>),
+        Origin = root,
+        Offset = CFrame.new(<span class="num">0</span>, <span class="num">0</span>, <span class="num">-3.5</span>),
+        Duration = <span class="num">0.2</span>,
+        Mode = <span class="str">"Once"</span>,
+        Authority = <span class="str">"Hybrid"</span>,
+        Owner = player,
+        Filter = {
+            LookingFor = <span class="str">"Humanoid"</span>,
+            Blacklist = { character },
+        },
+        DotProduct = <span class="num">0.2</span>,
+    })
+
+    hitbox.Hit:<span class="fn">Connect</span>(<span class="kw">function</span>(result)
+        <span class="kw">if</span> result.Humanoid <span class="kw">then</span>
+            result.Humanoid:<span class="fn">TakeDamage</span>(<span class="num">30</span>)
+        <span class="kw">end</span>
+    <span class="kw">end</span>)
+
+    hitbox:<span class="fn">Start</span>()
+<span class="kw">end</span></code></pre>
+
+      <h3>Client</h3>
+<pre><code><span class="kw">local</span> Client = <span class="fn">require</span>(ReplicatedStorage.Spatial).Client
+
+<span class="kw">local function</span> <span class="fn">slash</span>(character: Model)
+    <span class="kw">local</span> root = character:<span class="fn">FindFirstChild</span>(<span class="str">"HumanoidRootPart"</span>) :: BasePart?
+    <span class="kw">if not</span> root <span class="kw">then return end</span>
+
+    <span class="kw">local</span> hitbox = Client:<span class="fn">Create</span>({
+        Shape = <span class="str">"Box"</span>,
+        Size = Vector3.new(<span class="num">5</span>, <span class="num">5</span>, <span class="num">7</span>),
+        Origin = root,
+        Offset = CFrame.new(<span class="num">0</span>, <span class="num">0</span>, <span class="num">-3.5</span>),
+        Duration = <span class="num">0.2</span>,
+        Authority = <span class="str">"Client"</span>,
+    })
+
+    hitbox.Hit:<span class="fn">Connect</span>(<span class="kw">function</span>(result)
+        playSlashVFX(result.Position, result.Part)
+    <span class="kw">end</span>)
+
+    hitbox:<span class="fn">Start</span>()
+<span class="kw">end</span></code></pre>
+
+      <h2 id="aoe">Sphere AOE (Server Authority)</h2>
+<pre><code><span class="kw">local</span> Server = <span class="fn">require</span>(ReplicatedStorage.Spatial).Server
+
+<span class="kw">local function</span> <span class="fn">explosion</span>(position: Vector3, radius: number, owner: Player?)
+    <span class="kw">local</span> hitbox = Server:<span class="fn">Create</span>({
+        Shape = <span class="str">"Sphere"</span>,
+        Radius = radius,
+        CFrame = CFrame.new(position),
+        Duration = <span class="num">0.05</span>,
+        Mode = <span class="str">"Pierce"</span>,
+        Authority = <span class="str">"Server"</span>,
+        Owner = owner,
+        Filter = { LookingFor = <span class="str">"Humanoid"</span> },
+    })
+
+    hitbox.Hit:<span class="fn">Connect</span>(<span class="kw">function</span>(result)
+        <span class="kw">if</span> result.Humanoid <span class="kw">then</span>
+            result.Humanoid:<span class="fn">TakeDamage</span>(<span class="num">50</span>)
+        <span class="kw">end</span>
+    <span class="kw">end</span>)
+
+    hitbox:<span class="fn">Start</span>()
+<span class="kw">end</span></code></pre>
+
+      <h2 id="welded">Welded Weapon</h2>
+<pre><code><span class="kw">local</span> Server = <span class="fn">require</span>(ReplicatedStorage.Spatial).Server
+
+<span class="kw">local function</span> <span class="fn">attachToWeapon</span>(player: Player, weaponPart: BasePart)
+    <span class="kw">local</span> hitbox = Server:<span class="fn">Create</span>({
+        Shape = <span class="str">"Box"</span>,
+        Size = Vector3.new(<span class="num">1</span>, <span class="num">1</span>, <span class="num">4</span>),
+        Duration = <span class="num">0</span>,
+        Mode = <span class="str">"Cooldown"</span>,
+        Debounce = <span class="num">0.15</span>,
+        Authority = <span class="str">"Hybrid"</span>,
+        Owner = player,
+        Filter = {
+            LookingFor = <span class="str">"Humanoid"</span>,
+            Blacklist = { player.Character },
+        },
+    })
+
+    hitbox:<span class="fn">WeldTo</span>(weaponPart, CFrame.new(<span class="num">0</span>, <span class="num">0</span>, <span class="num">-2</span>))
+    hitbox.Hit:<span class="fn">Connect</span>(<span class="kw">function</span>(result)
+        <span class="kw">if</span> result.Humanoid <span class="kw">then</span>
+            result.Humanoid:<span class="fn">TakeDamage</span>(<span class="num">15</span>)
+        <span class="kw">end</span>
+    <span class="kw">end</span>)
+
+    hitbox:<span class="fn">Start</span>()
+    <span class="cm">-- later: hitbox:Stop() / hitbox:Destroy()</span>
+<span class="kw">end</span></code></pre>
+
+      <h2 id="projectile">Projectile (Server)</h2>
+<pre><code><span class="kw">local</span> Server = <span class="fn">require</span>(ReplicatedStorage.Spatial).Server
+
+<span class="kw">local function</span> <span class="fn">fireProjectile</span>(player: Player, origin: CFrame, speed: number)
+    <span class="kw">local</span> part = Instance.new(<span class="str">"Part"</span>)
+    part.Size = Vector3.new(<span class="num">0.5</span>, <span class="num">0.5</span>, <span class="num">2</span>)
+    part.CFrame = origin
+    part.Anchored = <span class="kw">true</span>
+    part.CanCollide = <span class="kw">false</span>
+    part.Parent = workspace
+
+    <span class="kw">local</span> hitbox = Server:<span class="fn">Create</span>({
+        Shape = <span class="str">"Part"</span>,
+        Part = part,
+        Duration = <span class="num">2</span>,
+        Mode = <span class="str">"Once"</span>,
+        Authority = <span class="str">"Server"</span>,
+        Owner = player,
+        Filter = {
+            LookingFor = <span class="str">"Humanoid"</span>,
+            Blacklist = { player.Character },
+        },
+    })
+
+    hitbox.Hit:<span class="fn">Connect</span>(<span class="kw">function</span>(result)
+        <span class="kw">if</span> result.Humanoid <span class="kw">then</span>
+            result.Humanoid:<span class="fn">TakeDamage</span>(<span class="num">40</span>)
+        <span class="kw">end</span>
+        hitbox:<span class="fn">Destroy</span>()
+        part:<span class="fn">Destroy</span>()
+    <span class="kw">end</span>)
+
+    hitbox:<span class="fn">Start</span>()
+
+    <span class="kw">local</span> conn
+    conn = game:<span class="fn">GetService</span>(<span class="str">"RunService"</span>).Heartbeat:<span class="fn">Connect</span>(<span class="kw">function</span>(dt)
+        <span class="kw">if not</span> part.Parent <span class="kw">then</span> conn:<span class="fn">Disconnect</span>() <span class="kw">return end</span>
+        part.CFrame += part.CFrame.LookVector * speed * dt
+    <span class="kw">end</span>)
+<span class="kw">end</span></code></pre>
+
+      <h2 id="npcs">Tracking NPCs</h2>
+<pre><code><span class="kw">local</span> Server = <span class="fn">require</span>(ReplicatedStorage.Spatial).Server
+
+Server:<span class="fn">Track</span>(npcModel)
+
+npcModel.Destroying:<span class="fn">Connect</span>(<span class="kw">function</span>()
+    Server:<span class="fn">Untrack</span>(npcModel)
+<span class="kw">end</span>)</code></pre>
+      <div class="callout callout-info">
+        <strong>Without tracking</strong>
+        Lag compensation cannot rewind that model. Always track potential targets.
+      </div>
+
+      <h2 id="mutate">Runtime Mutation</h2>
+<pre><code>hitbox:<span class="fn">SetSize</span>(Vector3.new(<span class="num">10</span>, <span class="num">10</span>, <span class="num">10</span>))
+hitbox:<span class="fn">SetRadius</span>(<span class="num">12</span>)
+hitbox:<span class="fn">SetCFrame</span>(CFrame.new(<span class="num">0</span>, <span class="num">10</span>, <span class="num">0</span>))
+hitbox:<span class="fn">ClearHits</span>()
+<span class="kw">local</span> alreadyHit = hitbox:<span class="fn">GetHits</span>()</code></pre>
+
+      <h2 id="reject">Listening for Rejections</h2>
+<pre><code>hitbox.Rejected:<span class="fn">Connect</span>(<span class="kw">function</span>(reason)
+    <span class="cm">-- reason is a RejectReason string</span>
+    <span class="fn">warn</span>(<span class="str">"claim rejected:"</span>, reason)
+<span class="kw">end</span>)</code></pre>
+    </main>
+  </div>
+
+  <footer class="site-footer">
+    Spatial v1.0.1 · MIT · by <a href="https://github.com/soggybird0">@soggybird0</a>
+  </footer>
+  <script src="js/main.js"></script>
+</body>
+</html>

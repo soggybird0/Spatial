@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Spatial — Shared Hitbox Library for Roblox</title>
+  <meta name="description" content="A shared spatial hitbox library for Roblox with lag compensation, velocity prediction, and server/client authority modes." />
+  <link rel="icon" href="assets/icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <button class="menu-toggle" aria-label="Toggle menu">☰</button>
+    <a href="index.html" class="logo">
+      <img class="logo-icon" src="assets/icon.png" alt="" width="28" height="28" />
+      Spatial
+    </a>
+    <nav class="nav-links">
+      <a href="index.html" class="active">Overview</a>
+      <a href="api.html">API Reference</a>
+      <a href="examples.html">Examples</a>
+    </nav>
+    <div class="header-right">
+      <a class="btn" href="https://github.com/soggybird0/Spatial" target="_blank" rel="noopener">GitHub</a>
+      <a class="btn btn-primary" href="api.html">Get Started →</a>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-title">Overview</div>
+        <a href="#features">Features</a>
+        <a href="#installation">Installation</a>
+        <a href="#quick-start">Quick Start</a>
+        <a href="#authority">Authority Modes</a>
+        <a href="#architecture">Architecture</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-title">Guides</div>
+        <a href="#configuration">Configuration</a>
+        <a href="#tracking">Tracking &amp; Rewind</a>
+        <a href="#debug">Debug</a>
+        <a href="examples.html">Examples</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-title">Docs</div>
+        <a href="api.html">Full API Reference</a>
+        <a href="examples.html">Code Examples</a>
+      </div>
+    </aside>
+
+    <main class="main">
+      <section class="hero">
+        <h1>Spatial</h1>
+        <p class="lead">
+          A shared spatial hitbox library for Roblox. Works on server and client.
+          Handles latency, prediction, lag compensation, velocity, and exploits —
+          so you don’t have to fight <code>.Touched</code>.
+        </p>
+        <div class="hero-badges">
+          <span class="badge badge-accent">v1.0.1</span>
+          <span class="badge">Server + Client</span>
+          <span class="badge">Lag Compensation</span>
+          <span class="badge">Luau Strict</span>
+          <span class="badge">MIT License</span>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <a class="btn btn-primary" href="api.html">API Reference</a>
+          <a class="btn" href="examples.html">Examples</a>
+          <a class="btn" href="https://github.com/soggybird0/Spatial" target="_blank" rel="noopener">GitHub</a>
+        </div>
+      </section>
+
+      <h2 id="features">Features</h2>
+      <div class="features">
+        <div class="feature">
+          <h3>Shared Server + Client</h3>
+          <p>Predictive hits on the client, authoritative confirmation on the server.</p>
+        </div>
+        <div class="feature">
+          <h3>Lag Compensation</h3>
+          <p>Server rewinds target poses to the claim timestamp before validating.</p>
+        </div>
+        <div class="feature">
+          <h3>Velocity Prediction</h3>
+          <p>Accounts for moving targets instead of static snapshots.</p>
+        </div>
+        <div class="feature">
+          <h3>Flexible Shapes</h3>
+          <p>Box, Sphere, or Part-based hitboxes with origin + offset welding.</p>
+        </div>
+        <div class="feature">
+          <h3>Authority Modes</h3>
+          <p>Server, Client, or Hybrid — pick the right tradeoff per attack.</p>
+        </div>
+        <div class="feature">
+          <h3>Budget-Aware</h3>
+          <p>Hard limits on queries per frame and claim rate per player.</p>
+        </div>
+        <div class="feature">
+          <h3>Fail-Closed</h3>
+          <p>Explicit reject reasons. Nothing is accepted by default.</p>
+        </div>
+        <div class="feature">
+          <h3>Type-Safe</h3>
+          <p>Full Luau types for params, results, and enums.</p>
+        </div>
+      </div>
+
+      <h2 id="installation">Installation</h2>
+
+      <div class="tabs">
+        <div class="tab-labels">
+          <button class="active">Wally</button>
+          <button>Manual / Rojo</button>
+        </div>
+        <div class="tab-panel active">
+<pre><code>[dependencies]
+Spatial = "soggybird0/spatial@1.0.1"</code></pre>
+        </div>
+        <div class="tab-panel">
+<pre><code><span class="cm">-- Place under ReplicatedStorage, require from both sides</span>
+<span class="kw">local</span> Spatial = <span class="fn">require</span>(ReplicatedStorage.Spatial)</code></pre>
+        </div>
+      </div>
+
+      <h2 id="quick-start">Quick Start</h2>
+      <p>Require Spatial <strong>once on the server</strong> so remotes and pose history exist before any client talks.</p>
+
+      <h3>Server (authoritative damage)</h3>
+<pre><code><span class="kw">local</span> Server = <span class="fn">require</span>(ReplicatedStorage.Spatial).Server
+
+<span class="kw">local</span> hitbox = Server:<span class="fn">Create</span>({
+    Shape = <span class="str">"Box"</span>,
+    Size = Vector3.new(<span class="num">6</span>, <span class="num">6</span>, <span class="num">8</span>),
+    Origin = character.HumanoidRootPart,
+    Offset = CFrame.new(<span class="num">0</span>, <span class="num">0</span>, <span class="num">-4</span>),
+    Duration = <span class="num">0.25</span>,
+    Authority = <span class="str">"Hybrid"</span>,
+    Owner = player,
+})
+
+hitbox.Hit:<span class="fn">Connect</span>(<span class="kw">function</span>(result)
+    <span class="kw">if</span> result.Humanoid <span class="kw">then</span>
+        result.Humanoid:<span class="fn">TakeDamage</span>(<span class="num">25</span>)
+    <span class="kw">end</span>
+<span class="kw">end</span>)
+
+hitbox:<span class="fn">Start</span>()</code></pre>
+
+      <h3>Client (predictive VFX only)</h3>
+<pre><code><span class="kw">local</span> Client = <span class="fn">require</span>(ReplicatedStorage.Spatial).Client
+
+<span class="kw">local</span> hitbox = Client:<span class="fn">Create</span>({
+    Shape = <span class="str">"Sphere"</span>,
+    Radius = <span class="num">5</span>,
+    Origin = character.HumanoidRootPart,
+    Duration = <span class="num">0.2</span>,
+})
+
+hitbox.Hit:<span class="fn">Connect</span>(<span class="kw">function</span>(result)
+    playHitEffect(result.Position) <span class="cm">-- never apply damage here</span>
+<span class="kw">end</span>)
+
+hitbox:<span class="fn">Start</span>()</code></pre>
+
+      <div class="callout callout-tip">
+        <strong>Rule of thumb</strong>
+        Apply damage and gameplay effects only from <code>Spatial.Server.Hit</code>.
+        Use <code>Spatial.Client.Hit</code> for instant visual/audio feedback.
+      </div>
+
+      <h2 id="authority">Authority Modes</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Mode</th><th>Client queries?</th><th>Server queries?</th><th>Typical use</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>"Server"</code></td><td>No</td><td>Yes</td><td>Projectiles, AOE</td></tr>
+            <tr><td><code>"Client"</code></td><td>Yes</td><td>No*</td><td>Ultra-responsive melee</td></tr>
+            <tr><td><code>"Hybrid"</code></td><td>Yes</td><td>Yes</td><td>Best of both (default)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:13px;color:var(--text-faint);">* Pure client-authority nodes still exist on the server so claims have a place to land.</p>
+
+      <h2 id="architecture">Architecture</h2>
+      <p>Spatial is built around one rule: <strong>clients may predict; only the server may decide.</strong></p>
+      <ol>
+        <li>Client runs spatial queries and fires a <strong>claim</strong> (hitbox ID, timestamp, victim tokens).</li>
+        <li>Server rate-limits, looks up the hitbox, rewinds tracked poses to the claim time.</li>
+        <li>Server re-tests intersection against the rewound world.</li>
+        <li>Emits confirmed <code>Hit</code> or <code>Rejected</code> with an explicit reason.</li>
+      </ol>
+      <p>Gameplay logic should only listen to the <strong>server</strong> <code>Hit</code> signal.</p>
+
+      <div class="callout callout-info">
+        <strong>Pose history</strong>
+        Track every potential target with <code>Server.Track(model)</code> so lag compensation can rewind them.
+        Owner characters are tracked automatically when you pass <code>Owner</code>.
+      </div>
+
+      <h2 id="configuration">Configuration</h2>
+      <p>Override defaults early with <code>Configure</code>:</p>
+<pre><code>Server:<span class="fn">Configure</span>({
+    MaxRewind = <span class="num">0.5</span>,
+    QueriesPerFrame = <span class="num">48</span>,
+    ClaimRate = <span class="num">18</span>,
+    Debug = <span class="kw">false</span>,
+})</code></pre>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Key</th><th>Default</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>MaxRewind</code></td><td><code>0.5</code></td><td>Seconds the server can rewind</td></tr>
+            <tr><td><code>HistorySeconds</code></td><td><code>1</code></td><td>Pose history length</td></tr>
+            <tr><td><code>HistoryHz</code></td><td><code>20</code></td><td>Snapshot rate</td></tr>
+            <tr><td><code>QueriesPerFrame</code></td><td><code>48</code></td><td>Hard query budget</td></tr>
+            <tr><td><code>ClaimRate</code></td><td><code>18</code></td><td>Client claims / sec / player</td></tr>
+            <tr><td><code>DefaultAuthority</code></td><td><code>"Hybrid"</code></td><td>Server / Client / Hybrid</td></tr>
+            <tr><td><code>Debug</code></td><td><code>false</code></td><td>Draw markers in Studio</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>See the full list in the module’s <code>Config</code> and the <a href="api.html#configuration">API page</a>.</p>
+
+      <h2 id="tracking">Tracking &amp; Rewind</h2>
+<pre><code>Players.PlayerAdded:<span class="fn">Connect</span>(<span class="kw">function</span>(player)
+    player.CharacterAdded:<span class="fn">Connect</span>(<span class="kw">function</span>(character)
+        Server:<span class="fn">Track</span>(character)
+    <span class="kw">end</span>)
+<span class="kw">end</span>)
+
+<span class="cm">-- NPCs</span>
+Server:<span class="fn">Track</span>(npcModel)
+Server:<span class="fn">Untrack</span>(npcModel) <span class="cm">-- on despawn</span></code></pre>
+
+      <h2 id="debug">Debug</h2>
+<pre><code>Server.DebugHook:<span class="fn">SetEnabled</span>(<span class="kw">true</span>)
+<span class="fn">print</span>(Server:<span class="fn">Metrics</span>())
+<span class="fn">print</span>(Server:<span class="fn">Health</span>())
+
+Client.DebugHook:<span class="fn">SetEnabled</span>(<span class="kw">true</span>)</code></pre>
+      <p>When debug is on, Spatial draws temporary markers at query volumes and hit positions in Studio.</p>
+    </main>
+  </div>
+
+  <footer class="site-footer">
+    Spatial v1.0.1 · MIT · by <a href="https://github.com/soggybird0">@soggybird0</a>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API Reference — Spatial</title>
+  <meta name="description" content="Full API reference for the Spatial hitbox library." />
+  <link rel="icon" href="assets/icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <button class="menu-toggle" aria-label="Toggle menu">☰</button>
+    <a href="index.html" class="logo">
+      <img class="logo-icon" src="assets/icon.png" alt="" width="28" height="28" />
+      Spatial
+    </a>
+    <nav class="nav-links">
+      <a href="index.html">Overview</a>
+      <a href="api.html" class="active">API Reference</a>
+      <a href="examples.html">Examples</a>
+    </nav>
+    <div class="header-right">
+      <a class="btn" href="https://github.com/soggybird0/Spatial" target="_blank" rel="noopener">GitHub</a>
+      <a class="btn btn-primary" href="examples.html">Examples →</a>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-title">Module</div>
+        <a href="#require">Require</a>
+        <a href="#configuration">Configuration</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-title">Server</div>
+        <a href="#server-configure">Configure</a>
+        <a href="#server-create">Create</a>
+        <a href="#server-get">Get</a>
+        <a href="#server-track">Track / Untrack</a>
+        <a href="#server-misc">Ping / Now / Metrics</a>
+        <a href="#server-debug">DebugHook</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-title">Client</div>
+        <a href="#client-configure">Configure</a>
+        <a href="#client-create">Create</a>
+        <a href="#client-get">Get / Now</a>
+        <a href="#client-debug">DebugHook</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-title">Hitbox</div>
+        <a href="#hitbox-props">Properties</a>
+        <a href="#hitbox-signals">Signals</a>
+        <a href="#hitbox-lifecycle">Lifecycle</a>
+        <a href="#hitbox-attach">Attachment</a>
+        <a href="#hitbox-mutate">Mutation</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-title">Types</div>
+        <a href="#types-params">HitboxParams</a>
+        <a href="#types-result">HitResult</a>
+        <a href="#types-enums">Enums</a>
+        <a href="#types-reject">RejectReason</a>
+      </div>
+    </aside>
+
+    <main class="main">
+      <h1>API Reference</h1>
+      <p class="lead">Everything Spatial exposes on server and client.</p>
+
+      <h2 id="require">Require</h2>
+<pre><code><span class="kw">local</span> Spatial = <span class="fn">require</span>(ReplicatedStorage.Spatial)
+
+Spatial.Client  <span class="cm">-- client API (nil on server)</span>
+Spatial.Server  <span class="cm">-- server API (nil on client)</span>
+Spatial.Types   <span class="cm">-- shared type exports</span></code></pre>
+      <div class="callout callout-warn">
+        <strong>Server bootstrap</strong>
+        Require Spatial once on the server so remotes and pose history exist before any client talks.
+      </div>
+
+      <h2 id="configuration">Configuration</h2>
+      <p>All knobs live in <code>Config</code>. Change them before creating hitboxes:</p>
+<pre><code>Server:<span class="fn">Configure</span>({ MaxRewind = <span class="num">0.5</span>, Debug = <span class="kw">true</span> })
+Client:<span class="fn">Configure</span>({ Debug = <span class="kw">true</span> })</code></pre>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Key</th><th>Default</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>DefaultShape</code></td><td><code>"Box"</code></td><td>Shape when none supplied</td></tr>
+            <tr><td><code>DefaultSize</code></td><td><code>Vector3.new(6,6,8)</code></td><td>Box extents</td></tr>
+            <tr><td><code>DefaultRadius</code></td><td><code>4</code></td><td>Sphere radius</td></tr>
+            <tr><td><code>DefaultDuration</code></td><td><code>0.2</code></td><td>Seconds active</td></tr>
+            <tr><td><code>DefaultMode</code></td><td><code>"Once"</code></td><td>Once / Pierce / Cooldown</td></tr>
+            <tr><td><code>DefaultAuthority</code></td><td><code>"Hybrid"</code></td><td>Server / Client / Hybrid</td></tr>
+            <tr><td><code>LagCompensate</code></td><td><code>true</code></td><td>Enable pose rewind</td></tr>
+            <tr><td><code>VelocityPrediction</code></td><td><code>true</code></td><td>Extrapolate movers</td></tr>
+            <tr><td><code>MaxRewind</code></td><td><code>0.5</code></td><td>Max rewind seconds</td></tr>
+            <tr><td><code>RewindPadding</code></td><td><code>0.03</code></td><td>Interpolation padding</td></tr>
+            <tr><td><code>HistorySeconds</code></td><td><code>1</code></td><td>Pose buffer length</td></tr>
+            <tr><td><code>HistoryHz</code></td><td><code>20</code></td><td>Snapshot rate</td></tr>
+            <tr><td><code>QueriesPerFrame</code></td><td><code>48</code></td><td>Query budget</td></tr>
+            <tr><td><code>ClaimRate</code></td><td><code>18</code></td><td>Claims / sec / player</td></tr>
+            <tr><td><code>MaxClaimVictims</code></td><td><code>12</code></td><td>Victims per claim</td></tr>
+            <tr><td><code>MaxHitboxesPerOwner</code></td><td><code>math.huge</code></td><td>Live hitboxes per player</td></tr>
+            <tr><td><code>CharacterPad</code></td><td><code>Vector3.new(2,3,1.5)</code></td><td>Rewind test half-extents</td></tr>
+            <tr><td><code>Debug</code></td><td><code>false</code></td><td>Draw markers</td></tr>
+            <tr><td><code>LogLevel</code></td><td><code>"Warn"</code></td><td>Silent → Trace</td></tr>
+            <tr><td><code>RemoteFolderName</code></td><td><code>"Spatial_Remotes"</code></td><td>Remote folder name</td></tr>
+            <tr><td><code>AliveFolder</code></td><td><code>nil</code></td><td>Restrict query targets</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- SERVER -->
+      <h2 id="server">Server</h2>
+      <p><code>local Server = require(...).Server</code></p>
+
+      <h3 id="server-configure">Configure</h3>
+      <div class="method">
+        <div class="method-sig">Server.Configure(patch: { [string]: any })</div>
+        <p>Override config keys. Unknown keys are ignored and logged.</p>
+      </div>
+
+      <h3 id="server-create">Create</h3>
+      <div class="method">
+        <div class="method-sig">Server.Create(params: HitboxParams): Hitbox</div>
+        <p>Create a new hitbox. See <a href="#types-params">HitboxParams</a>.</p>
+      </div>
+
+      <h3 id="server-get">Get</h3>
+      <div class="method">
+        <div class="method-sig">Server.Get(id: string): Hitbox?</div>
+        <p>Retrieve a live hitbox by ID.</p>
+      </div>
+
+      <h3 id="server-track">Track / Untrack</h3>
+      <div class="method">
+        <div class="method-sig">Server.Track(model: Model)</div>
+        <div class="method-sig">Server.Untrack(model: Model)</div>
+        <p>Begin or stop recording pose history for lag compensation. Every potential <strong>target</strong> must be tracked.</p>
+      </div>
+
+      <h3 id="server-misc">Ping / Now / Metrics / Health / SetAliveFolder</h3>
+      <div class="method">
+        <div class="method-sig">Server.Ping(player: Player): number</div>
+        <div class="method-sig">Server.Now(): number</div>
+        <div class="method-sig">Server.Metrics(): { ... }</div>
+        <div class="method-sig">Server.Health(): { ... }</div>
+        <div class="method-sig">Server.SetAliveFolder(folder: Instance)</div>
+        <p>Latency, synchronized time, counters, diagnostics, and optional alive-folder filter.</p>
+      </div>
+
+      <h3 id="server-debug">DebugHook</h3>
+      <div class="method">
+        <div class="method-sig">Server.DebugHook.SetEnabled(on: boolean)</div>
+        <div class="method-sig">Server.DebugHook.Enabled(): boolean</div>
+        <p>Studio helpers for markers and metric dumps.</p>
+      </div>
+
+      <!-- CLIENT -->
+      <h2 id="client">Client</h2>
+      <p><code>local Client = require(...).Client</code></p>
+
+      <h3 id="client-configure">Configure</h3>
+      <div class="method">
+        <div class="method-sig">Client.Configure(patch: { [string]: any })</div>
+        <p>Same as server Configure.</p>
+      </div>
+
+      <h3 id="client-create">Create</h3>
+      <div class="method">
+        <div class="method-sig">Client.Create(params: HitboxParams): Hitbox</div>
+        <p>Create a predictive hitbox. Automatically blacklists the local character when possible.</p>
+        <div class="callout callout-warn" style="margin-top:12px;margin-bottom:0;">
+          <strong>Prediction only</strong>
+          Do not apply damage from client Hit. Wait for server confirmation.
+        </div>
+      </div>
+
+      <h3 id="client-get">Get / Now</h3>
+      <div class="method">
+        <div class="method-sig">Client.Get(id: string): Hitbox?</div>
+        <div class="method-sig">Client.Now(): number</div>
+      </div>
+
+      <h3 id="client-debug">DebugHook</h3>
+      <div class="method">
+        <div class="method-sig">Client.DebugHook.SetEnabled(on: boolean)</div>
+        <div class="method-sig">Client.DebugHook.Enabled(): boolean</div>
+      </div>
+
+      <!-- HITBOX -->
+      <h2 id="hitbox">Hitbox</h2>
+      <p>Returned by <code>Create</code>.</p>
+
+      <h3 id="hitbox-props">Properties</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Member</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>Id</code></td><td><code>string</code></td><td>Unique identifier</td></tr>
+            <tr><td><code>Params</code></td><td><code>HitboxParams</code></td><td>Creation parameters</td></tr>
+            <tr><td><code>Active</code></td><td><code>boolean</code></td><td>Currently running</td></tr>
+            <tr><td><code>Destroyed</code></td><td><code>boolean</code></td><td>Fully cleaned up</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="hitbox-signals">Signals</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Signal</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>Hit</code></td><td>Fires with a <code>HitResult</code></td></tr>
+            <tr><td><code>Started</code></td><td>Fired when <code>:Start</code> succeeds</td></tr>
+            <tr><td><code>Stopped</code></td><td>Fired when the hitbox stops</td></tr>
+            <tr><td><code>Rejected</code></td><td>Server only — claim rejected</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="hitbox-lifecycle">Lifecycle</h3>
+      <div class="method">
+        <div class="method-sig">hitbox:Start(duration: number?)</div>
+        <div class="method-sig">hitbox:Stop()</div>
+        <div class="method-sig">hitbox:Destroy()</div>
+      </div>
+
+      <h3 id="hitbox-attach">Attachment</h3>
+      <div class="method">
+        <div class="method-sig">hitbox:WeldTo(part: BasePart, offset: CFrame?)</div>
+        <div class="method-sig">hitbox:Unweld()</div>
+        <p>Attach to a moving part (weapon, projectile). Follows each frame.</p>
+      </div>
+
+      <h3 id="hitbox-mutate">Mutation &amp; hit memory</h3>
+      <div class="method">
+        <div class="method-sig">hitbox:SetCFrame(cf: CFrame)</div>
+        <div class="method-sig">hitbox:SetSize(size: Vector3)</div>
+        <div class="method-sig">hitbox:SetRadius(radius: number)</div>
+        <div class="method-sig">hitbox:ClearHits()</div>
+        <div class="method-sig">hitbox:GetHits(): { Model }</div>
+      </div>
+
+      <!-- TYPES -->
+      <h2 id="types">Types</h2>
+
+      <h3 id="types-params">HitboxParams</h3>
+      <p>All fields optional; defaults from Config.</p>
+<pre><code>{
+    Shape: <span class="str">"Box"</span> | <span class="str">"Sphere"</span> | <span class="str">"Part"</span>,
+    Size: Vector3,           <span class="cm">-- Box</span>
+    Radius: number,          <span class="cm">-- Sphere</span>
+    Part: BasePart,          <span class="cm">-- Part shape</span>
+    CFrame: CFrame,          <span class="cm">-- world origin</span>
+    Origin: BasePart,        <span class="cm">-- follow this part</span>
+    Offset: CFrame,          <span class="cm">-- relative to Origin</span>
+    Duration: number,
+    Mode: <span class="str">"Once"</span> | <span class="str">"Pierce"</span> | <span class="str">"Cooldown"</span>,
+    Debounce: number,
+    Filter: {
+        Whitelist: { Instance }?,
+        Blacklist: { Instance }?,
+        AliveFolder: Instance?,
+        CollisionGroup: string?,
+        LookingFor: <span class="str">"Humanoid"</span> | <span class="str">"Player"</span> | <span class="str">"Model"</span>,
+    },
+    Authority: <span class="str">"Server"</span> | <span class="str">"Client"</span> | <span class="str">"Hybrid"</span>,
+    Owner: Player?,
+    LagCompensate: boolean?,
+    VelocityPrediction: boolean?,
+    MaxRewind: number?,
+    Debug: boolean?,
+    Id: string?,
+    DotProduct: number?,
+    ReferenceLook: Vector3?,
+}</code></pre>
+
+      <h3 id="types-result">HitResult</h3>
+<pre><code>{
+    Model: Model,
+    Humanoid: Humanoid?,
+    Player: Player?,
+    Part: BasePart,
+    Position: Vector3,
+    Confirmed: boolean,   <span class="cm">-- true after server validation</span>
+    Rewound: boolean,     <span class="cm">-- lag compensation applied</span>
+    Latency: number,
+}</code></pre>
+
+      <h3 id="types-enums">Enums</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Mode</th><th>Behaviour</th></tr></thead>
+          <tbody>
+            <tr><td><code>Once</code></td><td>First valid hit per target</td></tr>
+            <tr><td><code>Pierce</code></td><td>Hit every valid target each query</td></tr>
+            <tr><td><code>Cooldown</code></td><td>Same target again after Debounce</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="types-reject">RejectReason</h3>
+      <p>Emitted on <code>hitbox.Rejected</code> (server):</p>
+      <p><code>Destroyed</code> · <code>Inactive</code> · <code>RateLimited</code> · <code>BadPayload</code> · <code>StaleTime</code> · <code>FutureTime</code> · <code>NoIntersect</code> · <code>Filtered</code> · <code>UnknownHitbox</code> · <code>NoOwner</code> · <code>PingExceeded</code></p>
+    </main>
+  </div>
+
+  <footer class="site-footer">
+    Spatial v1.0.1 · MIT · by <a href="https://github.com/soggybird0">@soggybird0</a>
+  </footer>
+  <script src="js/main.js"></script>
+</body>
+</html>
