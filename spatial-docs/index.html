@@ -11,9 +11,38 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/styles.css" />
   <style>
-    /* Solo index: hero without visualizer column */
-    .hero-grid { grid-template-columns: 1fr; max-width: 640px; }
-    .hero { padding-bottom: 40px; }
+    .hero {
+      position: relative;
+      overflow: hidden;
+      min-height: 420px;
+      padding: 48px 40px 56px;
+      display: flex;
+      align-items: center;
+    }
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .hero-inner {
+      position: relative;
+      z-index: 1;
+      max-width: 560px;
+    }
+    /* Fade grid under text for readability */
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background:
+        linear-gradient(90deg, rgba(11,10,18,0.92) 0%, rgba(11,10,18,0.55) 42%, rgba(11,10,18,0.15) 70%, transparent 100%),
+        linear-gradient(180deg, rgba(11,10,18,0.35) 0%, transparent 40%, rgba(11,10,18,0.5) 100%);
+      pointer-events: none;
+    }
   </style>
 </head>
 <body>
@@ -26,6 +55,7 @@
     <nav class="nav">
       <a href="index.html" class="on">Overview</a>
       <a href="api.html">API</a>
+      <a href="examples.html">Examples</a>
     </nav>
     <div class="top-actions">
       <a class="btn" href="https://github.com/soggybird0/Spatial" target="_blank" rel="noopener">GitHub</a>
@@ -47,28 +77,28 @@
       <a href="#debug">Debug</a>
       <div class="side-label">Pages</div>
       <a href="api.html">API reference</a>
+      <a href="examples.html">Examples</a>
     </aside>
 
     <div class="content">
       <section class="hero">
-        <div class="hero-grid">
-          <div>
-            <div class="hero-kicker"><span></span> Shared hitbox library · v1.0.2</div>
-            <h1>Spatial — hitboxes that <em>actually check where you were</em>.</h1>
-            <p class="hero-lead">
-              Server + client hitboxes with lag compensation, velocity prediction, and fail-closed validation.
-              Not another <code>.Touched</code> wrapper — a system that rewinds the world before it decides.
-            </p>
-            <div class="hero-row">
-              <span class="chip chip-hi">Lag compensation</span>
-              <span class="chip">Hybrid authority</span>
-              <span class="chip">Luau strict</span>
-              <span class="chip">MIT</span>
-            </div>
-            <div class="hero-cta">
-              <a class="btn btn-main" href="#quickstart">Quick start</a>
-              <a class="btn" href="api.html">API reference</a>
-            </div>
+        <canvas class="hero-bg" id="hero-wave" aria-hidden="true"></canvas>
+        <div class="hero-inner">
+          <div class="hero-kicker"><span></span> Shared hitbox library · v1.0.2</div>
+          <h1>Spatial — hitboxes that <em>actually check where you were</em>.</h1>
+          <p class="hero-lead">
+            Server + client hitboxes with lag compensation, velocity prediction, and fail-closed validation.
+            Not another <code>.Touched</code> wrapper — a system that rewinds the world before it decides.
+          </p>
+          <div class="hero-row">
+            <span class="chip chip-hi">Lag compensation</span>
+            <span class="chip">Hybrid authority</span>
+            <span class="chip">Luau strict</span>
+            <span class="chip">MIT</span>
+          </div>
+          <div class="hero-cta">
+            <a class="btn btn-main" href="#quickstart">Quick start</a>
+            <a class="btn" href="api.html">API reference</a>
           </div>
         </div>
       </section>
@@ -92,17 +122,17 @@
             <p>Rate limits, stale/future timestamps, no-intersect — explicit reject reasons.</p>
           </div>
           <div class="card">
-            <div class="ico">🌐︎</div>
+            <div class="ico">↕</div>
             <h3>Shapes that move</h3>
             <p>Box, sphere, or part. Weld to weapons. Origin + offset follow every frame.</p>
           </div>
           <div class="card">
-            <div class="ico">🗐</div>
+            <div class="ico">🎚️</div>
             <h3>Budgeted</h3>
             <p>Hard caps on queries per frame and claims per player so combat stays cheap.</p>
           </div>
           <div class="card">
-            <div class="ico">𓂃🖊</div>
+            <div class="ico">🌐︎</div>
             <h3>Typed end to end</h3>
             <p>Strict Luau types for params, results, modes, and authority.</p>
           </div>
@@ -238,5 +268,6 @@ Client.DebugHook:<span class="fn">SetEnabled</span>(<span class="kw">true</span>
   </div>
 
   <script src="js/main.js"></script>
+  <script src="js/hero-wave.js"></script>
 </body>
 </html>
