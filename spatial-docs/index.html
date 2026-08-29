@@ -10,6 +10,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    /* Solo index: hero without visualizer column */
+    .hero-grid { grid-template-columns: 1fr; max-width: 640px; }
+    .hero { padding-bottom: 40px; }
+  </style>
 </head>
 <body>
   <header class="topbar">
@@ -21,7 +26,6 @@
     <nav class="nav">
       <a href="index.html" class="on">Overview</a>
       <a href="api.html">API</a>
-      <a href="examples.html">Examples</a>
     </nav>
     <div class="top-actions">
       <a class="btn" href="https://github.com/soggybird0/Spatial" target="_blank" rel="noopener">GitHub</a>
@@ -43,10 +47,32 @@
       <a href="#debug">Debug</a>
       <div class="side-label">Pages</div>
       <a href="api.html">API reference</a>
-      <a href="examples.html">Examples</a>
     </aside>
 
     <div class="content">
+      <section class="hero">
+        <div class="hero-grid">
+          <div>
+            <div class="hero-kicker"><span></span> Shared hitbox library · v1.0.2</div>
+            <h1>Spatial — hitboxes that <em>actually check where you were</em>.</h1>
+            <p class="hero-lead">
+              Server + client hitboxes with lag compensation, velocity prediction, and fail-closed validation.
+              Not another <code>.Touched</code> wrapper — a system that rewinds the world before it decides.
+            </p>
+            <div class="hero-row">
+              <span class="chip chip-hi">Lag compensation</span>
+              <span class="chip">Hybrid authority</span>
+              <span class="chip">Luau strict</span>
+              <span class="chip">MIT</span>
+            </div>
+            <div class="hero-cta">
+              <a class="btn btn-main" href="#quickstart">Quick start</a>
+              <a class="btn" href="api.html">API reference</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <div class="page">
         <h2 id="features">Why not just .Touched?</h2>
         <div class="cards">
@@ -66,7 +92,7 @@
             <p>Rate limits, stale/future timestamps, no-intersect — explicit reject reasons.</p>
           </div>
           <div class="card">
-            <div class="ico">↕</div>
+            <div class="ico">🌐︎</div>
             <h3>Shapes that move</h3>
             <p>Box, sphere, or part. Weld to weapons. Origin + offset follow every frame.</p>
           </div>
@@ -76,7 +102,7 @@
             <p>Hard caps on queries per frame and claims per player so combat stays cheap.</p>
           </div>
           <div class="card">
-            <div class="ico">🌐︎</div>
+            <div class="ico">𓂃🖊</div>
             <h3>Typed end to end</h3>
             <p>Strict Luau types for params, results, modes, and authority.</p>
           </div>
@@ -165,10 +191,6 @@ hitbox:<span class="fn">Start</span>()</code></pre>
           <li>Server rate-limits, rewinds tracked poses, re-tests the volume.</li>
           <li>Emits confirmed <code>Hit</code> or <code>Rejected</code> with a reason. Fail closed.</li>
         </ol>
-        <div class="note">
-          <strong>The visualizer above</strong>
-          Purple volume = your hitbox. Green figure = live target. Ghost figure = where the server rewinds them. The dashed link is the claim path.
-        </div>
 
         <h2 id="config">Configuration</h2>
 <pre><code>Server:<span class="fn">Configure</span>({
@@ -216,6 +238,5 @@ Client.DebugHook:<span class="fn">SetEnabled</span>(<span class="kw">true</span>
   </div>
 
   <script src="js/main.js"></script>
-  <script src="js/visualizer.js"></script>
 </body>
 </html>
