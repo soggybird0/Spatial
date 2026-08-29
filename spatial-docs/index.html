@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Spatial — Shared Roblox Hitbox Library</title>
+  <title>Spatial</title>
   <meta name="description" content="Spatial is a shared Roblox hitbox library with lag compensation and server-authoritative validation. Hitboxes that actually check where you were." />
   <link rel="icon" href="assets/icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -144,15 +144,24 @@
 
         <h2 id="install">Install</h2>
         <div class="tabs">
-          <div class="tabbar">
-            <button class="on" type="button">Wally</button>
-            <button type="button">Manual / Rojo</button>
-          </div>
-          <div class="tab on">
+<div class="tabbar">
+  <button class="on" type="button">Wally</button>
+  <button type="button">Creator Store</button>
+</div>
+
+<div class="tab on">
 <pre><code>[dependencies]
 Spatial = "soggybird0/spatial@1.0.2"</code></pre>
-          </div>
-          <div class="tab">
+</div>
+
+<div class="tab">
+<p>1. Claim the asset on the <a href="https://create.roblox.com/store/asset/139268204858693/Spatial" target="_blank">Creator Store</a>.</p>
+<p>2. Open Roblox Studio and insert the model via the Toolbox (<b>Inventory &gt; My Models</b>).</p>
+<p>3. Parent the <code>Spatial</code> folder under <code>ReplicatedStorage</code> to begin using it in your scripts.</p>
+</div>
+
+
+
 <pre><code><span class="cm">-- Drop under ReplicatedStorage; require on server + client</span>
 <span class="kw">local</span> Spatial = <span class="fn">require</span>(ReplicatedStorage.Spatial)</code></pre>
           </div>
